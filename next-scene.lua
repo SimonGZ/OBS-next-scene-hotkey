@@ -1,3 +1,4 @@
+-- version 1.0
 obs                        = obslua
 next_scene_hotkey_id       = obs.OBS_INVALID_HOTKEY_ID
 prev_scene_hotkey_id       = obs.OBS_INVALID_HOTKEY_ID
