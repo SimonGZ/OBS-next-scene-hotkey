@@ -23,7 +23,7 @@ function next_scene(pressed)
     end
   end
   obs.obs_source_release(current_scene)
-	obs.source_list_release(scenes)
+  obs.source_list_release(scenes)
 end
 
 function previous_scene(pressed)
@@ -65,7 +65,7 @@ end
 
 function script_save(settings)
   local next_hotkey_save_array = obs.obs_hotkey_save(next_scene_hotkey_id)
-	obs.obs_data_set_array(settings, "next_scene.trigger", next_hotkey_save_array)
+  obs.obs_data_set_array(settings, "next_scene.trigger", next_hotkey_save_array)
   obs.obs_data_array_release(next_hotkey_save_array)
 
   local prev_hotkey_save_array = obs.obs_hotkey_save(prev_scene_hotkey_id)
