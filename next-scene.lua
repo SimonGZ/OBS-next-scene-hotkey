@@ -1,4 +1,4 @@
--- version 1.0
+-- version 1.1
 obs                        = obslua
 next_scene_hotkey_id       = obs.OBS_INVALID_HOTKEY_ID
 prev_scene_hotkey_id       = obs.OBS_INVALID_HOTKEY_ID
@@ -61,7 +61,7 @@ function script_load(settings)
   prev_scene_hotkey_id = obs.obs_hotkey_register_frontend("prev_scene.trigger", "Previous Scene", previous_scene)
   local prev_hotkey_save_array = obs.obs_data_get_array(settings, "prev_scene.trigger")
   obs.obs_hotkey_load(prev_scene_hotkey_id, prev_hotkey_save_array)
-  obs.obs_data_array_release(hotkey_save_array)
+  obs.obs_data_array_release(prev_hotkey_save_array)
 end
 
 function script_save(settings)
