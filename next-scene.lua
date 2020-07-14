@@ -1,7 +1,8 @@
--- version 1.1
+-- version 1.2
 obs                        = obslua
 next_scene_hotkey_id       = obs.OBS_INVALID_HOTKEY_ID
 prev_scene_hotkey_id       = obs.OBS_INVALID_HOTKEY_ID
+loop                       = false
 
 ----------------------------------------------------------
 
@@ -18,6 +19,9 @@ function next_scene(pressed)
       if current_scene_name == loop_scene_name then
         if scenes[i + 1] ~= nil then
           obs.obs_frontend_set_current_scene(scenes[i + 1])
+          break
+        elseif loop then
+          obs.obs_frontend_set_current_scene(scenes[1])
           break
         end
       end
@@ -40,6 +44,9 @@ function previous_scene(pressed)
       if current_scene_name == loop_scene_name then
         if scenes[i - 1] ~= nil then
           obs.obs_frontend_set_current_scene(scenes[i - 1])
+          break
+        elseif loop then
+          obs.obs_frontend_set_current_scene(scenes[#scenes])
           break
         end
       end
@@ -74,8 +81,27 @@ function script_save(settings)
   obs.obs_data_array_release(prev_hotkey_save_array)
 end
 
+-- A function named script_properties defines the properties that the user
+-- can change for the entire script module itself
+function script_properties()
+	local props = obs.obs_properties_create()
+	obs.obs_properties_add_bool(props, "loop", "Loop Scenes List")
+
+	return props
+end
+
+-- A function named script_update will be called when settings are changed
+function script_update(settings)
+	loop = obs.obs_data_get_bool(settings, "loop")
+end
+
+-- A function named script_defaults will be called to set the default settings
+function script_defaults(settings)
+	obs.obs_data_set_default_bool(settings, "loop", false)
+end
+
 -- A function named script_description returns the description shown to
 -- the user
 function script_description()
-  return "When the \"Next Scene\" hotkey is triggered, OBS moves to the next scene in the scenes list. When the \"Previous Scene\" hotkey is triggered, OBS moves to the previous scene in the scenes list."
+  return "When the \"Next Scene\" hotkey is triggered, OBS moves to the next scene in the scenes list. When the \"Previous Scene\" hotkey is triggered, OBS moves to the previous scene in the scenes list.\n\nIf \"Loop Scenes List\" is selected, then next scene and previous scene will cycle through the scenes list endlessly without stopping at the first or last scene."
 end
