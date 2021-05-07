@@ -1,8 +1,9 @@
--- version 1.2
+-- version 1.3
 obs                        = obslua
 next_scene_hotkey_id       = obs.OBS_INVALID_HOTKEY_ID
 prev_scene_hotkey_id       = obs.OBS_INVALID_HOTKEY_ID
 loop                       = false
+preview                    = true
 
 ----------------------------------------------------------
 
@@ -10,18 +11,30 @@ function next_scene(pressed)
   if not pressed then
     return
   end
+  local previewMode = false
+  if preview and obs.obs_frontend_preview_program_mode_active() then
+    previewMode = true
+  end
   local scenes = obs.obs_frontend_get_scenes()
-  local current_scene = obs.obs_frontend_get_current_scene()
+  local current_scene = nil
+  local scene_function = nil
+  if previewMode then
+    current_scene = obs.obs_frontend_get_current_preview_scene()
+    scene_function = obs.obs_frontend_set_current_preview_scene
+  else
+    current_scene = obs.obs_frontend_get_current_scene()
+    scene_function = obs.obs_frontend_set_current_scene
+  end
   local current_scene_name = obs.obs_source_get_name(current_scene)
   if scenes ~= nil then
     for i, scn in ipairs(scenes) do
       local loop_scene_name = obs.obs_source_get_name(scn)
       if current_scene_name == loop_scene_name then
         if scenes[i + 1] ~= nil then
-          obs.obs_frontend_set_current_scene(scenes[i + 1])
+          scene_function(scenes[i + 1])
           break
         elseif loop then
-          obs.obs_frontend_set_current_scene(scenes[1])
+          scene_function(scenes[1])
           break
         end
       end
@@ -35,18 +48,30 @@ function previous_scene(pressed)
   if not pressed then
     return
   end
+  local previewMode = false
+  if preview and obs.obs_frontend_preview_program_mode_active() then
+    previewMode = true
+  end
   local scenes = obs.obs_frontend_get_scenes()
-  local current_scene = obs.obs_frontend_get_current_scene()
+  local current_scene = nil
+  local scene_function = nil
+  if previewMode then
+    current_scene = obs.obs_frontend_get_current_preview_scene()
+    scene_function = obs.obs_frontend_set_current_preview_scene
+  else
+    current_scene = obs.obs_frontend_get_current_scene()
+    scene_function = obs.obs_frontend_set_current_scene
+  end
   local current_scene_name = obs.obs_source_get_name(current_scene)
   if scenes ~= nil then
     for i, scn in ipairs(scenes) do
       local loop_scene_name = obs.obs_source_get_name(scn)
       if current_scene_name == loop_scene_name then
         if scenes[i - 1] ~= nil then
-          obs.obs_frontend_set_current_scene(scenes[i - 1])
+          scene_function(scenes[i - 1])
           break
         elseif loop then
-          obs.obs_frontend_set_current_scene(scenes[#scenes])
+          scene_function(scenes[#scenes])
           break
         end
       end
@@ -86,6 +111,7 @@ end
 function script_properties()
 	local props = obs.obs_properties_create()
 	obs.obs_properties_add_bool(props, "loop", "Loop Scenes List")
+  obs.obs_properties_add_bool(props, "preview", "Change Preview")
 
 	return props
 end
@@ -93,15 +119,17 @@ end
 -- A function named script_update will be called when settings are changed
 function script_update(settings)
 	loop = obs.obs_data_get_bool(settings, "loop")
+  preview = obs.obs_data_get_bool(settings, "preview")
 end
 
 -- A function named script_defaults will be called to set the default settings
 function script_defaults(settings)
 	obs.obs_data_set_default_bool(settings, "loop", false)
+  obs.obs_data_set_default_bool(settings, "preview", true)
 end
 
 -- A function named script_description returns the description shown to
 -- the user
 function script_description()
-  return "When the \"Next Scene\" hotkey is triggered, OBS moves to the next scene in the scenes list. When the \"Previous Scene\" hotkey is triggered, OBS moves to the previous scene in the scenes list.\n\nIf \"Loop Scenes List\" is selected, then next scene and previous scene will cycle through the scenes list endlessly without stopping at the first or last scene."
+  return "When the \"Next Scene\" hotkey is triggered, OBS moves to the next scene in the scenes list. When the \"Previous Scene\" hotkey is triggered, OBS moves to the previous scene in the scenes list.\n\nIf \"Loop Scenes List\" is selected, then next scene and previous scene will cycle through the scenes list endlessly without stopping at the first or last scene.\n\nIf \"Change Preview\" is selected, then when in Studio Mode the hotkey will change the preview view rather than the program view."
 end
